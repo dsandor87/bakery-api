@@ -1,5 +1,3 @@
-// server.js
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -17,8 +15,8 @@ app.use(bodyParser.json());
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -28,16 +26,19 @@ app.post("/api/sendEmail", (req, res) => {
 
   const mailOptions = {
     from: email,
-    to: process.env.EMAIL,
+    to: process.env.EMAIL_USER,
     subject: `New message from ${name}`,
     text: `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Failed to send email" });
+      console.error("Error occurred while sending email:", error);
+      return res
+        .status(500)
+        .json({ message: "Failed to send email", error: error.toString() });
     }
+    console.log("Email sent:", info.response);
     res.status(200).json({ message: "Email sent successfully" });
   });
 });
